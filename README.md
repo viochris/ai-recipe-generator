@@ -56,8 +56,8 @@ The core of the application relies on a sophisticated **Prompt Injection System*
 
 1.  **Clone the Repository**
     ```bash
-    git clone https://github.com/yourusername/Chef-AI.git]
-    cd Chef-AI
+    git clone https://github.com/viochris/ai-recipe-generator.git
+    cd ai-recipe-generator
     ```
 
 2.  **Install Dependencies**
