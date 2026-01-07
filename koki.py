@@ -267,17 +267,9 @@ with generate:
     )
     output_of_healthier_food = prompt_for_healthier_food(is_healthy)
 
-    # --- 5. Simple Mode (Checkbox) ---
-    # Boolean logic: True = Fast & Easy / Beginner friendly; False = Elaborate / Gourmet.
-    is_simple = st.checkbox(
-        label="Prefer simple and quick recipes?",
-        value=False,
-        help="If checked, the AI will generate beginner-friendly recipes with fewer steps and shorter cooking times."
-    )
     # Construct the System Prompt based on User Choice (Simple vs Pro)
     prefix_prompt = prompt_for_recipe_type(
         languages, 
-        is_simple,                    # Checkbox value (True/False)
         current_ingredients,          # String containing the list of ingredients
         output_of_cook_method,        # String instructions for cooking method
         output_of_dominant_flavors,   # String instructions for flavor profile
@@ -291,8 +283,7 @@ with generate:
         or (getattr(st.session_state, "_last_flavors", None) != dominant_flavors) \
         or (getattr(st.session_state, "_last_method", None) != cook_method) \
         or (getattr(st.session_state, "_last_extra", None) != allow_extra_ingredients) \
-        or (getattr(st.session_state, "_last_healthy", None) != is_healthy) \
-        or (getattr(st.session_state, "_last_simple", None) != is_simple):
+        or (getattr(st.session_state, "_last_healthy", None) != is_healthy):
 
         try:
             # Initialize the LLM (Google Gemini)
@@ -334,7 +325,6 @@ with generate:
             st.session_state._last_method = cook_method
             st.session_state._last_extra = allow_extra_ingredients
             st.session_state._last_healthy = is_healthy
-            st.session_state._last_simple = is_simple
 
             # Clear chat history on recipe configuration change for consistency
             st.session_state.pop("messages", None)
@@ -475,10 +465,10 @@ with guide:
     1.  Switch to the **'🍳 Generate Recipe'** tab.
     2.  Wait for the **Settings** to appear (detected ingredients must exist first).
     3.  **Customize your preferences**:
+        * **Language:** Choose Indonesian or English.
         * **Taste:** Sweet, Spicy, Savory?
         * **Method:** Fry, Boil, Steam?
         * **Diet:** Healthy mode?
-        * **Mode:** Simple (Quick) or Pro (Detailed)?
 
     ---
 
@@ -542,8 +532,7 @@ with faq:
         # Q5: Persistent Warning Explanation
         with st.expander("⚠️ Why do I see the 'Please input your API Key' warning everywhere?"):
             st.markdown("""
-            **It is a Global Reminder.** 
-            * Without the API Key, the AI is effectively "offline" or "brainless."
+            **It is a Global Reminder.** * Without the API Key, the AI is effectively "offline" or "brainless."
             * We show this warning on every tab to prevent you from trying to upload photos or chat, only to get an error later.
             * **Good News:** As soon as you paste your key in the Sidebar, this warning will **disappear instantly** from all pages!
             """)
@@ -551,26 +540,24 @@ with faq:
         # Q6: Ingredient Accuracy
         with st.expander("🍎 Why did the AI miss some of my ingredients?"):
             st.markdown("""
-            **The AI's vision depends on image quality.** 
-            * If the photo is dark, blurry, or too cluttered, the AI might miss items.
+            **The AI's vision depends on image quality.** * If the photo is dark, blurry, or too cluttered, the AI might miss items.
             * **Tip:** Try to spread out your ingredients on a clear surface and take a well-lit photo.
             * **Solution:** You can always manually add missing items in the text area inside Tab 1!
             """)
 
-        # Q7: Pantry Staples (Assumed Ingredients)
+        # Q7: Pantry Staples (Updated to match logic)
         with st.expander("🧂 Why does the recipe include ingredients I didn't scan?"):
             st.markdown("""
             **The AI assumes you have 'Pantry Staples'.**
             * Even if you only scan a Chicken, the AI knows you can't cook it without basic items like **Oil, Salt, Pepper, or Water**.
             * It adds these automatically to make the recipe tasty and cookable.
-            * If the AI suggests something big (like 'Cheese' or 'Wine') that you don't have, check the **'Allow extra ingredients?'** box to False/Off.
+            * **Control:** If you want strictly ONLY what you scanned, you can uncheck the **'Allow extra ingredients?'** option or tell the Chef in the chat: *"Don't add extra ingredients."*
             """)
 
         # Q8: Food Safety Disclaimer
         with st.expander("🚑 Can I trust these recipes 100%?"):
             st.markdown("""
-            **Use your Chef's Intuition!** 
-            * AI is creative but not perfect. It might occasionally suggest weird combinations or incorrect cooking times.
+            **Use your Chef's Intuition!** * AI is creative but not perfect. It might occasionally suggest weird combinations or incorrect cooking times.
             * **Safety First:** Always ensure meat is cooked thoroughly, regardless of what the steps say. 
             * If a step seems dangerous or wrong, trust your gut (and taste buds) over the AI.
             """)
@@ -581,15 +568,15 @@ with faq:
             **This app runs on 'Session State'.**
             * This means the app's memory lives only as long as the tab is open.
             * If you hit **Refresh (F5)**, the app restarts from scratch, and the memory is wiped clean to protect your privacy.
-            * **Tip:** Copy-paste your favorite recipes to a notepad before closing the tab!
+            * **Tip:** Copy-paste your favorite recipes to a notepad before closing the tab or download it!
             """)
 
-        # Q10: Specific Diets (Keto/Vegan/Halal)
+        # Q10: Specific Diets (Updated logic)
         with st.expander("🥦 How do I request specific diets (Keto, Vegan, Halal)?"):
             st.markdown("""
-            **You have two ways:**
-            1.  **Check the 'Healthy Options' box:** This nudges the AI generally towards better nutrition.
-            2.  **Tell the Chat:** The most powerful way is to just type it! 
+            **You have two easy ways:**
+            1.  **Use the Settings:** Check the 'Healthy Options' box if you want a generally lighter meal.
+            2.  **Tell the Chat (Best Way):** Just type your specific needs directly! 
                 * *Example:* "Make this recipe Halal."
                 * *Example:* "I am on a Keto diet, no sugar please."
             """)
@@ -598,7 +585,7 @@ with faq:
         with st.expander("🕒 Why is the 'Conversation History' empty / How does it work?"):
             st.markdown("""
             **It acts as an archive for PAST dialogues only:**
-            1.  **Latest Chat stays in the Main Area:** The recipe you are discussing *right now* stays in the active chat interface (not in the history box yet).
+            1.  **Latest Chat stays in the Main Area:** The recipe you are discussing *right now* stays in the active chat interface.
             2.  **How it updates:** The Conversation History only saves dialogues *before* the current one. For example, Recipe 1 moves to the History only when you ask about Recipe 2.
             3.  **Purpose:** To archive previous recipes, keeping the main view focused on your current cooking session.
             """)
