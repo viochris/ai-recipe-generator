@@ -150,101 +150,47 @@ def prompt_for_healthier_food(healthy: bool):
 
 def prompt_for_recipe_type(
     languages: str,
-    is_simple: bool, 
     current_ingredients: str, 
     output_of_cook_method: str, 
     output_of_dominant_flavors: str, 
     output_of_healthier_food: str, 
     output_of_extra_ingredients: str
 ):
-    if is_simple:
-        return f"""
-            You are an expert Chef. 
-            Create a simple, direct recipe based on these inputs:
-            1. INGREDIENTS: [ "{current_ingredients}" ]
-            2. METHOD: {output_of_cook_method}
-            3. FLAVOR: {output_of_dominant_flavors}
-            4. DIET: {output_of_healthier_food}
-            5. EXTRA ITEMS: {output_of_extra_ingredients}
+    return f"""
+        You are an expert Chef. 
+        Create a simple, direct recipe based on these inputs:
+        1. INGREDIENTS: [ "{current_ingredients}" ]
+        2. METHOD: {output_of_cook_method}
+        3. FLAVOR: {output_of_dominant_flavors}
+        4. DIET: {output_of_healthier_food}
+        5. EXTRA ITEMS: {output_of_extra_ingredients}
 
-            ---
+        ---
             
-            LANGUAGE & FORMATTING RULES (STRICT):
-            1. **Target Language**: The user has selected: **{languages}**.
-            2. **Translate Everything**: You MUST translate ALL headers, labels, and content into **{languages}**.
-               - Example: If Indonesian, use "Bahan-bahan" instead of "Ingredients".
-               - Example: If Indonesian, use "Instruksi" instead of "Instructions".
-            3. **No Preamble**: Start directly with the Recipe Name.
+        LANGUAGE & FORMATTING RULES (STRICT):
+        1. **Target Language**: The user has selected: **{languages}**.
+        2. **Translate Everything**: You MUST translate ALL headers, labels, and content into **{languages}**.
+           - Example: If Indonesian, use "Bahan-bahan" instead of "Ingredients".
+           - Example: If Indonesian, use "Instruksi" instead of "Instructions".
+        3. **No Preamble**: Start directly with the Recipe Name.
 
-            ---
+        ---
             
-            OUTPUT FORMAT RULES (STRICT):
-            1. **No Preamble**: Do NOT say "Here is your recipe" or explain the dish. Start directly with the Recipe Name.
-            2. **No Analysis**: Do NOT output "Phase 1" or ingredient analysis.
-            3. **Structure**: STRICTLY follow the structure below, BUT translate the headers (like 'Ingredients', 'Instructions') to **{languages}**.
+        OUTPUT FORMAT RULES (STRICT):
+        1. **No Preamble**: Do NOT say "Here is your recipe" or explain the dish. Start directly with the Recipe Name.
+        2. **No Analysis**: Do NOT output "Phase 1" or ingredient analysis.
+        3. **Structure**: STRICTLY follow the structure below, BUT translate the headers (like 'Ingredients', 'Instructions') to **{languages}**.
 
-            OUTPUT STRUCTURE (Translate headers to {languages}):
+        OUTPUT STRUCTURE (Translate headers to {languages}):
 
-            [Recipe Name]
+        [Recipe Name]
 
-            [Header for Ingredients in {languages}]:
-            - [Quantity] [Ingredient]
-            - [Quantity] [Ingredient]
+        [Header for Ingredients in {languages}]:
+        - [Quantity] [Ingredient]
+        - [Quantity] [Ingredient]
 
-            [Header for Instructions in {languages}]:
-            Step 1: [Short, direct instruction]
-            Step 2: [Short, direct instruction]
-            Step 3: [Short, direct instruction]
-            """
-    else:
-        return f"""
-            ROLE DEFINITION:
-            You are a World-Class Executive Chef.
-            
-            INPUT DATA (Use this for your internal analysis):
-            - Core Ingredients: [ "{current_ingredients}" ]
-            - Technique: {output_of_cook_method}
-            - Flavor: {output_of_dominant_flavors}
-            - Diet: {output_of_healthier_food}
-            - Rules: {output_of_extra_ingredients}
-
-            ---
-
-            LANGUAGE RULE (CRITICAL):
-            The user has selected: **{languages}**.
-            You MUST respond ENTIRELY in **{languages}**. 
-            Translate ALL HEADERS (e.g., do not write "Recipe Blueprint", write "Rencana Resep" or equivalent in {languages}).
-
-            ---
-
-            OUTPUT INSTRUCTION (MERGED & FAST):
-            To prevent time-out, perform the Ingredient Analysis and Configuration silently. 
-            Start your output IMMEDIATELY with the **Recipe Blueprint** (Summary), then the **Full Recipe**.
-
-            Please generate the response in exactly these 2 visible sections (Translated to {languages}):
-
-            **SECTION 1: [Header for 'Recipe Blueprint' or 'Chef's Plan' in {languages}]**
-            - Provide a concise summary box containing:
-              * **Selected Dish:** [Name of the dish]
-              * **Key Strategy:** [1 sentence explaining why this recipe works for the ingredients]
-              * **Flavor & Texture:** [Brief description]
-              * **Dietary Check:** [Compliance status]
-
-            **SECTION 2: [Header for 'The Full Recipe' in {languages}]**
-            1.  **[Header for 'Recipe Name']**
-            2.  **[Header for 'Description']**
-            3.  **[Header for 'Ingredients']**: 
-                - List exact quantities.
-                - Use the detected ingredients.
-            4.  **[Header for 'Instructions']**: 
-                - Clear, numbered steps.
-                - Incorporate the cooking technique: {output_of_cook_method}.
-            5.  **[Header for 'Chef's Secret Tip']**
-
-            ---
-
-            FINAL INSTRUCTION:
-            Do NOT output "Phase 1" or "Phase 2". 
-            Start DIRECTLY with **SECTION 1** (The Blueprint).
-            Make sure the headers are in **{languages}**.
-            """
+        [Header for Instructions in {languages}]:
+        Step 1: [Short, direct instruction]
+        Step 2: [Short, direct instruction]
+        Step 3: [Short, direct instruction]
+        """
