@@ -11,7 +11,7 @@ from prompt_function import (
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain_community.tools import DuckDuckGoSearchRun
-from langchain.memory import ConversationBufferMemory
+from langchain.memory import ConversationSummaryMemory
 from langchain import hub
 
 def reset_state():
@@ -276,6 +276,7 @@ with generate:
     )
     # Construct the System Prompt based on User Choice (Simple vs Pro)
     prefix_prompt = prompt_for_recipe_type(
+        languages, 
         is_simple,                    # Checkbox value (True/False)
         current_ingredients,          # String containing the list of ingredients
         output_of_cook_method,        # String instructions for cooking method
@@ -286,11 +287,12 @@ with generate:
 
     if ("agent_executor" not in st.session_state) \
         or (getattr(st.session_state, "_last_key", None) != st.session_state["api_key"]) \
+        or (getattr(st.session_state, "_last_lan", None) != languages) \
         or (getattr(st.session_state, "_last_flavors", None) != dominant_flavors) \
         or (getattr(st.session_state, "_last_method", None) != cook_method) \
         or (getattr(st.session_state, "_last_extra", None) != allow_extra_ingredients) \
         or (getattr(st.session_state, "_last_healthy", None) != is_healthy) \
-        or (getattr(st.session_state, "_is_simple", None) != is_simple):
+        or (getattr(st.session_state, "_last_simple", None) != is_simple):
 
         try:
             # Initialize the LLM (Google Gemini)
@@ -321,12 +323,13 @@ with generate:
             st.session_state.agent_executor = AgentExecutor(
                 agent=st.session_state.agent_brain,
                 tools=tools,
-                memory= ConversationBufferMemory(memory_key="chat_history"),
+                memory=ConversationSummaryMemory(llm=llm, memory_key="chat_history", return_messages=True),
                 handle_parsing_errors=True # Auto-recover from LLM formatting errors
             )
 
             # Store current config to detect changes later
             st.session_state._last_key = st.session_state["api_key"]
+            st.session_state._last_lan = languages
             st.session_state._last_flavors = dominant_flavors
             st.session_state._last_method = cook_method
             st.session_state._last_extra = allow_extra_ingredients
@@ -370,9 +373,13 @@ with generate:
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
+    with st.expander("🕒 Conversation History"):
+        if st.session_state.messages:
+            for msg in st.session_state.messages:
+                with st.chat_message(msg["role"]):
+                    st.markdown(msg["content"])
+        else:
+            st.info("There are no previous messages or conversation history available to display at this moment.")
 
     # Capture User Input
     if st.session_state["ingredients_list"] == "":
@@ -386,44 +393,45 @@ with generate:
             with st.chat_message("human"):
                 st.markdown(prompt)
 
-            with st.status("👨‍🍳 Chef is crafting your recipe...", expanded=False) as status:
-                try:
-                    response = st.session_state.agent_executor.invoke({"input": prompt})
-                    
-                    if "output" in response and len(response["output"]) > 0:
-                        answer = response['output']
+                with st.status("👨‍🍳 Chef is crafting your recipe...", expanded=False) as status:
+                    try:
+                        response = st.session_state.agent_executor.invoke({"input": prompt})
                         
-                        status.update(label="✅ Recipe Ready to Serve!", state="complete", expanded=False)
-                    else:
-                        answer = "I'm sorry, I couldn't generate a response."
-                        status.update(label="❌ Failed to generate", state="error")
+                        if "output" in response and len(response["output"]) > 0:
+                            answer = response['output']
+                            st.session_state["generated_recipe"] = response['output']
+                            
+                            status.update(label="✅ Recipe Ready to Serve!", state="complete", expanded=False)
+                        else:
+                            answer = "I'm sorry, I couldn't generate a response."
+                            status.update(label="❌ Failed to generate", state="error")
 
-                except Exception as e:
-                    error_message = str(e)
+                    except Exception as e:
+                        error_message = str(e)
 
-                    # 1. Check for Quota/Rate Limit issues
-                    if "429" in error_message or "Quota exceeded" in error_message:
-                        # Store the long explanation in 'answer' to display it in the chat
-                        answer = """🚨 **Oops! API Quota Exceeded**
+                        # 1. Check for Quota/Rate Limit issues
+                        if "429" in error_message or "Quota exceeded" in error_message:
+                            # Store the long explanation in 'answer' to display it in the chat
+                            answer = """🚨 **Oops! API Quota Exceeded**
 
-                        **Explanation:** You have reached the free usage limit for the Google Gemini API.
+                            **Explanation:** You have reached the free usage limit for the Google Gemini API.
+                            
+                            **Solutions:**
+                            1. Wait for a few minutes.
+                            2. Try again tomorrow.
+                            """
+                            # Update the status box to Red (Error state)
+                            status.update(label="⏳ Quota Exceeded", state="error")
                         
-                        **Solutions:**
-                        1. Wait for a few minutes.
-                        2. Try again tomorrow.
-                        """
-                        # Update the status box to Red (Error state)
-                        status.update(label="⏳ Quota Exceeded", state="error")
-                    
-                    # 2. Check for Invalid API Key
-                    elif "API key not valid" in error_message:
-                        answer = "🔑 **Invalid API Key**\nPlease ensure you have entered the correct API Key in the sidebar."
-                        status.update(label="❌ Invalid Key", state="error")
+                        # 2. Check for Invalid API Key
+                        elif "API key not valid" in error_message:
+                            answer = "🔑 **Invalid API Key**\nPlease ensure you have entered the correct API Key in the sidebar."
+                            status.update(label="❌ Invalid Key", state="error")
 
-                    # 3. Handle other errors
-                    else:
-                        answer = f"⚠️ **Technical Error Occurred**\nError Details: `{error_message}`"
-                        status.update(label="⚠️ Error Occurred", state="error")
+                        # 3. Handle other errors
+                        else:
+                            answer = f"⚠️ **Technical Error Occurred**\nError Details: `{error_message}`"
+                            status.update(label="⚠️ Error Occurred", state="error")
 
             # 3. Display Assistant Message
             with st.chat_message("ai"):
@@ -431,6 +439,17 @@ with generate:
             
             # 4. Save to History
             st.session_state.messages.append({"role": "ai", "content": answer})
+
+    if st.session_state["generated_recipe"]:
+        st.download_button(
+            label="Download Recipe as Txt",
+            data=st.session_state["generated_recipe"],
+            file_name="recipe.txt",
+            on_click="ignore",
+            type="primary",
+            icon=":material/description:",
+            help="Export this recipe with full markdown formatting."
+        )
 
 with guide:
     st.header("📖 How to use Chef AI")
@@ -467,6 +486,13 @@ with guide:
     1.  Type what you want to cook in the **Chat Box** (e.g., *"Make something spicy with the chicken"*).
     2.  The AI Chef will analyze your request and generate a **Custom Recipe** just for you.
     3.  Enjoy your meal! 🍽️
+
+    ---
+
+    ### **Step 5: Review Past Recipes** 🕒
+    1.  Need to see a recipe you made earlier?
+    2.  Open the **'🕒 Conversation History'** expander above the chat.
+    3.  Your **old chats** are archived there automatically, keeping your main screen clean for the **current dish**!
     """)
 
     st.info("💡 **Tip:** You can ask the Chef to modify the recipe! Just type: *'Too much salt, make it healthier'* or *'Change chicken to tofu'*.")
@@ -566,6 +592,15 @@ with faq:
             2.  **Tell the Chat:** The most powerful way is to just type it! 
                 * *Example:* "Make this recipe Halal."
                 * *Example:* "I am on a Keto diet, no sugar please."
+            """)
+
+        # Q11: Conversation History Logic
+        with st.expander("🕒 Why is the 'Conversation History' empty / How does it work?"):
+            st.markdown("""
+            **It acts as an archive for PAST dialogues only:**
+            1.  **Latest Chat stays in the Main Area:** The recipe you are discussing *right now* stays in the active chat interface (not in the history box yet).
+            2.  **How it updates:** The Conversation History only saves dialogues *before* the current one. For example, Recipe 1 moves to the History only when you ask about Recipe 2.
+            3.  **Purpose:** To archive previous recipes, keeping the main view focused on your current cooking session.
             """)
             
     # Footer manis

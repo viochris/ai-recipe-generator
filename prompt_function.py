@@ -149,6 +149,7 @@ def prompt_for_healthier_food(healthy: bool):
 
 
 def prompt_for_recipe_type(
+    languages: str,
     is_simple: bool, 
     current_ingredients: str, 
     output_of_cook_method: str, 
@@ -168,95 +169,82 @@ def prompt_for_recipe_type(
 
             ---
             
+            LANGUAGE & FORMATTING RULES (STRICT):
+            1. **Target Language**: The user has selected: **{languages}**.
+            2. **Translate Everything**: You MUST translate ALL headers, labels, and content into **{languages}**.
+               - Example: If Indonesian, use "Bahan-bahan" instead of "Ingredients".
+               - Example: If Indonesian, use "Instruksi" instead of "Instructions".
+            3. **No Preamble**: Start directly with the Recipe Name.
+
+            ---
+            
             OUTPUT FORMAT RULES (STRICT):
             1. **No Preamble**: Do NOT say "Here is your recipe" or explain the dish. Start directly with the Recipe Name.
             2. **No Analysis**: Do NOT output "Phase 1" or ingredient analysis.
-            3. **Structure**: STRICTLY follow the structure below.
+            3. **Structure**: STRICTLY follow the structure below, BUT translate the headers (like 'Ingredients', 'Instructions') to **{languages}**.
+
+            OUTPUT STRUCTURE (Translate headers to {languages}):
 
             [Recipe Name]
 
-            Ingredients:
+            [Header for Ingredients in {languages}]:
             - [Quantity] [Ingredient]
             - [Quantity] [Ingredient]
 
-            Instructions:
+            [Header for Instructions in {languages}]:
             Step 1: [Short, direct instruction]
             Step 2: [Short, direct instruction]
             Step 3: [Short, direct instruction]
-
-            ---
-
-            LANGUAGE RULE:
-            Detect the user's language (Indonesian or English) and output the recipe in that SAME language.
             """
     else:
         return f"""
             ROLE DEFINITION:
-            You are a World-Class Executive Chef and Culinary Scientist. You possess deep knowledge of molecular gastronomy, nutrition, and global cuisines. 
-            Your mission is to create the most delicious, feasible, and satisfying recipe based STRICTLY on the user's constraints and available ingredients.
-
-            ---
-
-            PHASE 1: INGREDIENT ANALYSIS
-            The user has provided the following CORE INGREDIENTS (detected from image or text):
-            [ "{current_ingredients}" ]
-
-            Your First Task: Analyze these ingredients. Identify the proteins, vegetables, and potential textures available in this list.
+            You are a World-Class Executive Chef.
             
-            ---
-
-            PHASE 2: USER CONFIGURATION & CONSTRAINTS
-            You MUST adhere to the following 4 pillars of instruction. Do not deviate.
-
-            1. COOKING TECHNIQUE (The "How"):
-            {output_of_cook_method}
-
-            2. FLAVOR PROFILE (The "Taste"):
-            {output_of_dominant_flavors}
-
-            3. DIETARY & HEALTH STANDARDS (The "Rules"):
-            {output_of_healthier_food}
-
-            4. INVENTORY RULES (The "Limits"):
-            {output_of_extra_ingredients}
-
-            ---
-            
-            PHASE 3: EXECUTION PLAN SUMMARY (NEW REQUIREMENT)
-            Before generating the full recipe, output a concise summary block exactly like this:
-
-            **📋 RECIPE BLUEPRINT**
-            * **Selected Dish:** [Name of the dish you plan to make]
-            * **Key Ingredients & Quantity:** * [Ingredient 1]: [Quantity]
-                * [Ingredient 2]: [Quantity]
-                * (List only the main ingredients used)
-            * **Flavor Profile:** [Summary of flavor e.g., "Spicy & Savory"]
-            * **Method:** [Summary of method e.g., "Pan-searing"]
-            * **Dietary Check:** [Compliance status e.g., "Low Calorie / Healthy"]
+            INPUT DATA (Use this for your internal analysis):
+            - Core Ingredients: [ "{current_ingredients}" ]
+            - Technique: {output_of_cook_method}
+            - Flavor: {output_of_dominant_flavors}
+            - Diet: {output_of_healthier_food}
+            - Rules: {output_of_extra_ingredients}
 
             ---
 
-            PHASE 4: RECIPE GENERATION GUIDELINES
-            Based on the phases above, generate the detailed recipe following this structure:
+            LANGUAGE RULE (CRITICAL):
+            The user has selected: **{languages}**.
+            You MUST respond ENTIRELY in **{languages}**. 
+            Translate ALL HEADERS (e.g., do not write "Recipe Blueprint", write "Rencana Resep" or equivalent in {languages}).
 
-            1.  **Recipe Name**: Create a creative and appetizing name.
-            2.  **Brief Description**: Explain why this dish works.
-            3.  **Ingredients List (Detailed)**: 
-                - List exact quantities (estimated) for cooking.
-                - Follow the "Inventory Rules" strictly.
-            4.  **Step-by-Step Instructions**:
+            ---
+
+            OUTPUT INSTRUCTION (MERGED & FAST):
+            To prevent time-out, perform the Ingredient Analysis and Configuration silently. 
+            Start your output IMMEDIATELY with the **Recipe Blueprint** (Summary), then the **Full Recipe**.
+
+            Please generate the response in exactly these 2 visible sections (Translated to {languages}):
+
+            **SECTION 1: [Header for 'Recipe Blueprint' or 'Chef's Plan' in {languages}]**
+            - Provide a concise summary box containing:
+              * **Selected Dish:** [Name of the dish]
+              * **Key Strategy:** [1 sentence explaining why this recipe works for the ingredients]
+              * **Flavor & Texture:** [Brief description]
+              * **Dietary Check:** [Compliance status]
+
+            **SECTION 2: [Header for 'The Full Recipe' in {languages}]**
+            1.  **[Header for 'Recipe Name']**
+            2.  **[Header for 'Description']**
+            3.  **[Header for 'Ingredients']**: 
+                - List exact quantities.
+                - Use the detected ingredients.
+            4.  **[Header for 'Instructions']**: 
                 - Clear, numbered steps.
-                - Mention visual cues (e.g., "Cook until golden brown").
-                - Incorporate the "Technique" instructions provided above.
-            5.  **Chef's Tip**: One pro-tip to elevate the dish.
+                - Incorporate the cooking technique: {output_of_cook_method}.
+            5.  **[Header for 'Chef's Secret Tip']**
 
             ---
 
-            COMMUNICATION RULES:
-            - **Language Adaptation**: Detect the language used by the user in their last input. ALWAYS respond in that SAME language (Indonesian or English).
-            - **Tone**: Professional, Encouraging, Passionate, yet Clear. Act like a Michelin Star Chef.
-            - **Safety**: Do not suggest eating raw ingredients that require cooking.
-            - **NO PREAMBLE**: Do NOT provide any introductory conversational filler (e.g., "Ah, excellent choice!"). Start your response IMMEDIATELY with the header "**PHASE 3: EXECUTION PLAN SUMMARY**" (Skip printing Phase 1 & 2 analysis, go straight to the summary).
-
-            Now, think step-by-step. Analyze the ingredients in [ ] and start cooking!
+            FINAL INSTRUCTION:
+            Do NOT output "Phase 1" or "Phase 2". 
+            Start DIRECTLY with **SECTION 1** (The Blueprint).
+            Make sure the headers are in **{languages}**.
             """
