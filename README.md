@@ -8,7 +8,7 @@
 ## 📌 Overview
 **Chef AI** is an intelligent recipe generator that turns your available ingredients into delicious meals. Powered by **Google Gemini Vision** and **LangChain**, this application allows users to upload photos of their fridge or pantry, automatically detects ingredients, and generates tailored recipes based on specific dietary preferences, cooking methods, and flavor profiles.
 
-Whether you are a beginner looking for a quick meal or a gourmet enthusiast wanting a "Molecular Gastronomy" explanation, Chef AI adapts to your needs using dynamic prompt engineering and agentic reasoning.
+Whether you are a beginner looking for a quick meal or a home cook wanting to try something new, Chef AI adapts to your needs using dynamic prompt engineering and agentic reasoning.
 
 ## ✨ Key Features
 
@@ -19,15 +19,13 @@ Gone are the days of manual typing. Chef AI utilizes **Gemini's Multimodal capab
 * **Manual Override:** Users can edit the detected list to fix typos or add missing items.
 
 ### 🧠 Adaptive Recipe Engine
-The core of the application relies on a sophisticated **Prompt Injection System** that alters the AI's persona based on user settings:
-* **Dual Modes:**
-    * **Simple Mode:** Generates short, direct, beginner-friendly recipes.
-    * **Pro Mode:** Activates the "World-Class Executive Chef" persona, providing deep ingredient analysis, flavor profiling, and execution plans.
-* **Custom Configuration:** Users can define:
+The core of the application relies on a sophisticated **Dynamic Prompting System** that tailors the recipe to be direct and efficient based on user settings:
+* **Smart Configuration:** Users can define specific parameters that the AI must follow:
     * **Flavor Profile:** (e.g., Savory, Spicy, Umami).
     * **Cooking Method:** (e.g., Stir-fry, Steam, "Surprise Me").
     * **Dietary Rules:** (e.g., Healthy/Low Calorie).
     * **Inventory Control:** Strict (use only what I have) vs. Flexible (allow shopping for extras).
+* **Efficiency First:** The engine is optimized to generate clear, structured, and fast recipes (Ingredients + Instructions) without unnecessary fluff to save API quota and reduce latency.
 
 ### 💬 Interactive Chef Chat
 * **ReAct Agent:** Built with LangChain's `create_react_agent`, the Chef can reason through requests and even search the web (via DuckDuckGo) if needed.
@@ -38,7 +36,7 @@ The core of the application relies on a sophisticated **Prompt Injection System*
 * **API Key Security:** Keys are handled via session state and never stored permanently.
 
 ## 🛠️ Tech Stack
-* **LLM Provider:** Google Generative AI (Gemini 1.5/2.5 Flash).
+* **LLM Provider:** Google Generative AI (Gemini 2.5 Flash).
 * **Vision Model:** Gemini Vision (for image analysis).
 * **Framework:** Streamlit (Frontend & State Management).
 * **Orchestration:** LangChain (Agents, Memory, Tools).
