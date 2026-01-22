@@ -93,6 +93,5 @@ Don't have ingredients ready? You can use these sample images provided in the `a
   &nbsp; &nbsp; <img src="assets/ingredients_example_2.jpg" width="45%" title="Raw Spices">
 </p>
 
----
-**Author:** [Silvio Christian, Joe]
+**Author:** [Silvio Christian, Joe](https://www.linkedin.com/in/silvio-christian-joe)
 *"Turning leftovers into gourmet meals, one prompt at a time."*
