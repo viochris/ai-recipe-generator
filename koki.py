@@ -298,7 +298,7 @@ with generate:
             tools = [DuckDuckGoSearchRun(name='Search')]
             
             # Pull the standard ReAct prompt template from LangChain Hub
-            prompt_agent = hub.pull("hwchase17/react-chat")
+            prompt_agent = hub.pull("hwchase17/react-chat", dangerously_pull_public_prompt=True)
             
             # Merge the custom persona instructions with the default agent template
             prompt_agent.template = prefix_prompt + "\n\n" + prompt_agent.template
