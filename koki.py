@@ -12,6 +12,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain.memory import ConversationSummaryMemory
+from langsmith import Client as LangSmithClient
 from langchain import hub
 
 def reset_state():
@@ -298,7 +299,10 @@ with generate:
             tools = [DuckDuckGoSearchRun(name='Search')]
             
             # Pull the standard ReAct prompt template from LangChain Hub
-            prompt_agent = hub.pull("hwchase17/react-chat", dangerously_pull_public_prompt=True)
+            prompt_agent = LangSmithClient().pull_prompt(
+                "hwchase17/react-chat", 
+                dangerously_pull_public_prompt=True
+            )
             
             # Merge the custom persona instructions with the default agent template
             prompt_agent.template = prefix_prompt + "\n\n" + prompt_agent.template
